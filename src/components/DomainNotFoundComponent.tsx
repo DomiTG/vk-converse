@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function DomainNotFoundComponent({ host }: { host: string }) {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-neutral-900 bg-gradient-to-br from-neutral-800 to-neutral-900">
-      <div className="backdrop-blur-lg bg-neutral-800/60 max-w-sm md:max-w-md w-full p-8 rounded-xl border border-neutral-700">
+      <div className="backdrop-blur-lg bg-neutral-800/60 max-w-xs md:max-w-sm lg:max-w-md w-full p-8 rounded-xl border border-neutral-700">
         <div className="text-center">
           <h1 className="text-xl md:text-2xl lg:textl-xl xl:text-4xl font-extrabold text-white uppercase">
             Vytvorkonverzku
