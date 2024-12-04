@@ -1,50 +1,9 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import type { GetServerSideProps } from "next";
+import type { NextPageContext } from "next";
 import prisma from "@/lib/prisma";
 
 type Props = { host: string | null };
-
-export const getServerSideProps: GetServerSideProps<Props> = async (
-  context,
-) => {
-  console.log("headers", context.req.headers);
-  console.log("calling getServerSideProps");
-  const host = context.req.headers.host;
-
-  console.log("host header:", host);
-  if (!host) {
-    console.error("Host header is missing");
-    return {
-      props: {
-        host: null,
-      },
-    };
-  }
-
-  try {
-    const domainRecord = await prisma.page_domains.findFirst({
-      where: {
-        domain: host,
-      },
-    });
-
-    console.log("Domain record:", domainRecord);
-
-    return {
-      props: {
-        host: domainRecord?.domain || null,
-      },
-    };
-  } catch (error) {
-    console.error("Error querying the database:", error);
-    return {
-      props: {
-        host: null,
-      },
-    };
-  }
-};
 
 export default function MyApp({
   Component,
@@ -59,3 +18,22 @@ export default function MyApp({
 
   return <Component {...pageProps} />;
 }
+
+MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
+  const host = ctx.req?.headers.host;
+  console.log(ctx.req);
+  if (!host) {
+    console.log("no host");
+    return { host: null };
+  }
+  try {
+    const domain = await prisma.page_domains.findFirst({
+      where: { domain: host.toLowerCase() },
+    });
+    console.log(domain);
+    return { host: domain ? domain : null };
+  } catch (error) {
+    console.error(error);
+    return { host: null };
+  }
+};
