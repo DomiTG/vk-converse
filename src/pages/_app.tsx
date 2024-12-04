@@ -8,31 +8,35 @@ type Props = { host: string | null };
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
+  console.log("calling getServerSideProps");
   const host = context.req.headers.host;
-  console.log("host", host);
+
+  console.log("host header:", host);
+  if (!host) {
+    console.error("Host header is missing");
+    return {
+      props: {
+        host: null,
+      },
+    };
+  }
+
   try {
-    const res = await prisma.page_domains.findFirst({
+    const domainRecord = await prisma.page_domains.findFirst({
       where: {
         domain: host,
       },
     });
-    console.log(res);
-    console.log(host);
-    if (res) {
-      return {
-        props: {
-          host: res.domain,
-        },
-      };
-    } else {
-      return {
-        props: {
-          host: null,
-        },
-      };
-    }
+
+    console.log("Domain record:", domainRecord);
+
+    return {
+      props: {
+        host: domainRecord?.domain || null,
+      },
+    };
   } catch (error) {
-    console.error(error);
+    console.error("Error querying the database:", error);
     return {
       props: {
         host: null,
@@ -46,6 +50,11 @@ export default function MyApp({
   pageProps,
   host,
 }: AppProps & Props) {
-  console.log(host);
-  return host === null ? <div>404</div> : <Component {...pageProps} />;
+  console.log("server-side resolved host:", host);
+
+  if (host === null) {
+    return <div>404 - Domain Not Found</div>;
+  }
+
+  return <Component {...pageProps} />;
 }
