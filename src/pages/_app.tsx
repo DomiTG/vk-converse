@@ -9,6 +9,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
   const host = context.req.headers.host;
+  console.log("host": host);
   try {
     const res = await prisma.page_domains.findFirst({
       where: {
