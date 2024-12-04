@@ -21,7 +21,6 @@ export default function MyApp({
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   const host = ctx.req?.headers.host;
-  console.log(ctx.req);
   if (!host) {
     console.log("no host");
     return { host: null };
