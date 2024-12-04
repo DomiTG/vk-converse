@@ -8,6 +8,7 @@ type Props = { host: string | null };
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
+  console.log("headers", context.req.headers);
   console.log("calling getServerSideProps");
   const host = context.req.headers.host;
 
