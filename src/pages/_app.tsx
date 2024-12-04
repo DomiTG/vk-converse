@@ -15,6 +15,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
         domain: host,
       },
     });
+    console.log(res);
+    console.log(host);
     if (res) {
       return {
         props: {
@@ -43,5 +45,6 @@ export default function MyApp({
   pageProps,
   host,
 }: AppProps & Props) {
+  console.log(host);
   return host === null ? <div>404</div> : <Component {...pageProps} />;
 }
