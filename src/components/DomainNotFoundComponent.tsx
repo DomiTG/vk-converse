@@ -19,7 +19,7 @@ export default function DomainNotFoundComponent({ host }: { host: string }) {
           </p>
           <div className="mt-6">
             <Link
-              href="/"
+              href="https://app.vytvorkonverzku.cz"
               className="inline-block px-4 py-2 text-sm text-neutral-900 bg-white rounded-lg shadow-sm hover:bg-neutral-200 transition uppercase font-semibold"
             >
               Go to dashboard

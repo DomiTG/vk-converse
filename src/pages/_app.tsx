@@ -25,9 +25,8 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
   }
   try {
     const domain = await prisma.page_domains.findFirst({
-      where: { domain: host.toLowerCase() },
+      where: { domain: host || host.split(".")[0].toLowerCase() },
     });
-    console.log(domain);
     return { host: domain ? domain : null, originalHost: host };
   } catch (error) {
     return { host: null, originalHost: host };

@@ -1,18 +1,13 @@
-import type { GetServerSideProps } from "next";
+import { useEffect, useState } from "react";
 
-type Props = { host: string | null };
+export default function Home() {
+  const [counter, setCounter] = useState(0);
 
-export const getServerSideProps: GetServerSideProps<Props> = async (
-  context,
-) => ({ props: { host: context.req.headers.host || null } });
-
-export default function Home({ host }: Props) {
+  useEffect(() => console.log("a"), [counter]);
   return (
     <div>
-      <h1 className="text-xl">Oh, nice. it works!</h1>
-      <p className="text-sm">
-        Currently, you are on <code>{host}</code>
-      </p>
+      <p className="text-2xl">Counter: {counter}</p>
+      <button onClick={() => setCounter(counter + 1)}>Increment</button>
     </div>
   );
 }
