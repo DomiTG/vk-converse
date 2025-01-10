@@ -1,13 +1,5 @@
-import { useEffect, useState } from "react";
+import PageHandler from "@/components/PageHandler";
 
-export default function Home() {
-  const [counter, setCounter] = useState(0);
-
-  useEffect(() => console.log("a"), [counter]);
-  return (
-    <div>
-      <p className="text-2xl">Counter: {counter}</p>
-      <button onClick={() => setCounter(counter + 1)}>Increment</button>
-    </div>
-  );
+export default function IndexPage() {
+  return <PageHandler route="/" />;
 }

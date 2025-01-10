@@ -19,17 +19,21 @@ model refresh_tokens {
 }
 
 model users {
-  id               Int                @id @default(autoincrement())
-  username         String             @db.VarChar(36)
-  display_name     String?            @db.VarChar(48)
-  password         String             @db.VarChar(512)
-  email_address    String             @db.VarChar(64)
-  max_media        Int
-  created_at       DateTime           @default(now()) @db.DateTime(0)
-  updated_at       DateTime           @default(now()) @db.DateTime(0)
-  conversion_pages conversion_pages[]
-  media            media[]
-  refresh_tokens   refresh_tokens[]
+  id                 Int                  @id @default(autoincrement())
+  username           String               @db.VarChar(36)
+  display_name       String?              @db.VarChar(48)
+  password           String               @db.VarChar(512)
+  email_address      String               @db.VarChar(64)
+  max_media          Int
+  stripe_customer    String?              @db.VarChar(48)
+  subscription_id    String?              @db.VarChar(128)
+  created_at         DateTime             @default(now()) @db.DateTime(0)
+  updated_at         DateTime             @default(now()) @db.DateTime(0)
+  converse_templates converse_templates[]
+  conversion_pages   conversion_pages[]
+  media              media[]
+  products           products[]
+  refresh_tokens     refresh_tokens[]
 }
 
 model conversion_pages {
@@ -40,11 +44,15 @@ model conversion_pages {
   created_at  DateTime             @default(now()) @db.DateTime(0)
   updated_at  DateTime             @default(now()) @db.DateTime(0)
   live_mode   Boolean              @default(false)
+  template    String               @db.LongText
   creator_id  Int
+  product_id  Int
   creator     users                @relation(fields: [creator_id], references: [id], onUpdate: Restrict, map: "conversion_pages_ibfk_1")
+  product     products             @relation(fields: [product_id], references: [id], onUpdate: Restrict, map: "conversion_pages_ibfk_2")
   domains     page_domains[]
 
   @@index([creator_id], map: "conversion_pages_ibfk_1")
+  @@index([product_id], map: "product_id")
 }
 
 model media {
@@ -61,15 +69,48 @@ model media {
 }
 
 model page_domains {
-  id              Int              @id @default(autoincrement())
-  page_id         String
-  created_at      DateTime         @db.DateTime(0)
-  renewed_at      DateTime?        @db.DateTime(0)
-  domain          String           @db.VarChar(64)
-  system_domain   Boolean
-  conversion_page conversion_pages @relation(fields: [page_id], references: [id], onUpdate: Restrict, map: "page_domains_ibfk_1")
+  id            Int              @id @default(autoincrement())
+  page_id       String
+  created_at    DateTime         @db.DateTime(0)
+  renewed_at    DateTime?        @db.DateTime(0)
+  domain        String           @db.VarChar(64)
+  system_domain Boolean
+  converse      conversion_pages @relation(fields: [page_id], references: [id], onUpdate: Restrict, map: "page_domains_ibfk_1")
 
   @@index([page_id], map: "page_id")
+}
+
+model converse_templates {
+  id            Int                              @id @default(autoincrement())
+  creator_id    Int
+  name          String                           @db.VarChar(32)
+  description   String                           @db.VarChar(256)
+  created_at    DateTime                         @db.DateTime(0)
+  template      String                           @db.LongText
+  thumbnail_url String                           @db.VarChar(512)
+  converse_type converse_templates_converse_type
+  creator       users                            @relation(fields: [creator_id], references: [id], onUpdate: Restrict, map: "converse_templates_ibfk_1")
+
+  @@index([creator_id], map: "creator_id")
+}
+
+model products {
+  id                 Int                      @id @default(autoincrement())
+  creator_id         Int
+  name               String                   @db.VarChar(36)
+  product_type       products_product_type
+  product_subtype    products_product_subtype
+  prices             String                   @db.LongText
+  tax_payer          Boolean
+  tax_included       Boolean
+  tax_rate           Int
+  weight             Int?
+  email_html_content String?                  @db.LongText
+  attachments        String?                  @db.LongText
+  conversion_pages   conversion_pages[]
+  creator            users                    @relation(fields: [creator_id], references: [id], onUpdate: Restrict, map: "products_ibfk_1")
+
+  @@index([creator_id], map: "creator_id")
 }
 
 enum conversion_page_type {
@@ -81,4 +122,19 @@ enum media_type {
   VIDEO
   IMAGE
   UNKNOWN
+}
+
+enum converse_templates_converse_type {
+  PRODUCT
+  EMAIL
+}
+
+enum products_product_type {
+  PRODUCT
+  EMAIL
+}
+
+enum products_product_subtype {
+  DIGITAL
+  PHYSICAL
 }
