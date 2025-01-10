@@ -33,7 +33,11 @@ export default function PageHandler({ route }: { route: string }) {
   if (!converse) return null;
   return (
     <>
-      {page ? (updateFlag ? render(page, toggle) : render(page, toggle)) : null}
+      {page
+        ? updateFlag
+          ? render(page, toggle)
+          : render(page, toggle)
+        : "404"}
     </>
   );
 }
