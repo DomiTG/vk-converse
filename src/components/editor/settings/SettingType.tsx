@@ -1,4 +1,4 @@
-import IMediaAttachment from "@/interfaces/IMediaAttachment";
+import IMediaAttachment from "../interfaces/IMediaAttachment";
 
 export default interface SettingType {
   id: string;
