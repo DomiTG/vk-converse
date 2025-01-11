@@ -197,7 +197,54 @@ export default class ButtonComponent extends IEditorComponent {
   }
 
   productionRender(): JSX.Element {
-    return <></>;
+    const width = (this.getSetting("WIDTH")?.value as string) || "auto";
+    const paddingX = (this.getSetting("PADDING_X")?.value as number) || 10;
+    const paddingY = (this.getSetting("PADDING_Y")?.value as number) || 10;
+    const borderRadius =
+      (this.getSetting("BORDER_RADIUS")?.value as number) || 5;
+    const textColor =
+      (this.getSetting("TEXT_COLOR")?.value as string) || "#ffffff";
+    const fontStyle =
+      (this.getSetting("FONT_STYLE")?.value as string) || "normal";
+    const fontWeight = (this.getSetting("FONT_WEIGHT")?.value as number) || 400;
+    const textSize = (this.getSetting("TEXT_SIZE")?.value as number) || 1;
+
+    type IconName = keyof typeof FaIcons;
+    const icon = (this.getSetting("ICON")?.value as string) || "";
+    const iconMargin = (this.getSetting("ICON_MARGIN")?.value as number) || 5;
+    const iconSize = (this.getSetting("ICON_SIZE")?.value as number) || 20;
+    const iconColor =
+      (this.getSetting("ICON_COLOR")?.value as string) || textColor;
+    return (
+      <button
+        style={{
+          backgroundColor: this.getSetting("COLOR")?.value as string,
+          width: width === "full" ? "100%" : "auto",
+          color: textColor,
+          padding: `${paddingY}px ${paddingX}px`,
+          border: "none",
+          cursor: "pointer",
+          borderRadius: borderRadius + "px",
+          fontStyle: fontStyle,
+          fontWeight: fontWeight,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: `${textSize}rem`,
+        }}
+        className="hover:opacity-90 transition duration-200"
+      >
+        {icon && (
+          <IconRenderer
+            icon={icon as IconName}
+            color={iconColor}
+            size={iconSize}
+            style={{ marginRight: iconMargin + "px" }}
+          />
+        )}
+        {(this.getSetting("TEXT")?.value as string) || "Klikni zde"}
+      </button>
+    );
   }
 
   clone(): IEditorComponent {
