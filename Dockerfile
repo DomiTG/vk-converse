@@ -4,7 +4,7 @@ FROM node:18-alpine AS builder
 # Step 2: Set the working directory
 WORKDIR /app
 
-# Step 3: Copy package.json and package-lock.json (if available)
+# Step 3: Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Step 4: Install dependencies
@@ -14,7 +14,8 @@ RUN npm install
 COPY prisma ./prisma
 COPY . .
 
-# Step 6: Generate Prisma client
+# Step 6: Pull the database schema and generate the Prisma client
+RUN npx prisma db pull
 RUN npx prisma generate
 
 # Step 7: Build the Next.js application
@@ -34,9 +35,6 @@ COPY --from=builder /app/prisma ./prisma
 
 # Step 11: Copy the .env file
 COPY .env .env
-
-CMD ["prisma", "db", "pull"]
-CMD ["prisma", "generate"]
 
 # Step 12: Expose the port
 EXPOSE 3000
