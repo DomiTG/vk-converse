@@ -35,6 +35,9 @@ COPY --from=builder /app/prisma ./prisma
 # Step 11: Copy the .env file
 COPY .env .env
 
+CMD ["prisma", "db", "pull"]
+CMD ["prisma", "generate"]
+
 # Step 12: Expose the port
 EXPOSE 3000
 
