@@ -14,10 +14,6 @@ RUN npm install
 COPY prisma ./prisma
 COPY . .
 
-# Step 6: Pull the database schema and generate the Prisma client
-RUN npx prisma db pull
-RUN npx prisma generate
-
 # Step 7: Build the Next.js application
 RUN npm run build
 
