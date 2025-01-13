@@ -14,6 +14,11 @@ RUN npm install
 COPY prisma ./prisma
 COPY . .
 
+# Step 11: Copy the .env file
+COPY .env .env
+
+RUN npx prisma generate
+
 # Step 7: Build the Next.js application
 RUN npm run build
 
@@ -28,9 +33,6 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
-
-# Step 11: Copy the .env file
-COPY .env .env
 
 # Step 12: Expose the port
 EXPOSE 3000
