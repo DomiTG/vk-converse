@@ -7,41 +7,49 @@ import { useEffect, useState } from "react";
 import IProduct from "@/components/editor/interfaces/IProduct";
 import { ConverseProvider } from "@/components/contexts/ConverseContext";
 import ITemplate from "@/components/editor/interfaces/ITemplate";
+import { matchPage } from "@/utils/loader";
+import IPage from "@/components/editor/interfaces/IPage";
 
-type Props = { host: any | null; originalHost: string };
+type Props = { host: any | null; originalHost: string; notFound?: boolean };
 
 export default function MyApp({
   Component,
   pageProps,
   host,
   originalHost,
+  notFound,
 }: AppProps & Props) {
-  const [converse, setConverse] = useState<ITemplate | null>(null);
+  const [page, setPage] = useState<IPage | null>(null);
   const [product, setProduct] = useState<IProduct | null>(null);
 
   useEffect(() => {
-    console.log(host);
     if (!host) return;
-    if (!host.converse.template) return console.log("no template");
-    const template = host.converse.template as ITemplate;
-    setConverse(template);
+    console.log(host);
+    if (!host.converse.page) return console.log("no page");
+    const page = host.converse.page as IPage;
+    setPage(page);
     if (!host.converse.product) return console.log("no product");
     const product = host.converse.product as IProduct;
     setProduct(product);
-    console.log("loaded in", product.id, template.pages);
+    console.log("loaded in", product.id, page.name);
   }, [host]);
+
+  if (notFound) {
+    return <h1>Not found</h1>;
+  }
 
   if (host === null) {
     return <DomainNotFoundComponent host={originalHost} />;
   }
   return (
-    <ConverseProvider value={{ converse, setConverse, product, setProduct }}>
+    <ConverseProvider value={{ page, setPage, product, setProduct }}>
       <Component {...pageProps} />
     </ConverseProvider>
   );
 }
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
+  const pathName = ctx.asPath;
   const host = ctx.req?.headers.host;
   if (!host) {
     return { host: null, originalHost: null };
@@ -69,8 +77,16 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
         },
       },
     });
-    const template = await JSON.parse(domainMain?.converse.template || "{}");
-    console.log(template.pages[0].components);
+    const template = (await JSON.parse(
+      domainMain?.converse.template || "{}",
+    )) as ITemplate;
+
+    const page = matchPage(template.pages, pathName || "/");
+    if (!page) {
+      return { host: null, originalHost: host, notFound: true };
+    }
+
+    console.log(page);
 
     return {
       host: domainMain
@@ -78,7 +94,7 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
             ...domainMain,
             converse: {
               ...domainMain.converse,
-              template,
+              page,
             },
           }
         : null,

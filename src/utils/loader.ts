@@ -23,6 +23,12 @@ export const loadTemplateJson = (page: IPage): IEditorPage | null => {
   return newPage;
 };
 
+export const matchPage = (pages: IPage[], route: string): IPage | undefined => {
+  return route === "/"
+    ? pages.find((page) => !page.url)
+    : pages.find((page) => page.url === route);
+};
+
 export const loadSubComponents = (
   root: RootComponent,
   parent: IEditorComponent,

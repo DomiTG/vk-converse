@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState } from "react";
 import ITemplate from "../editor/interfaces/ITemplate";
 import IProduct from "../editor/interfaces/IProduct";
+import IPage from "../editor/interfaces/IPage";
 
 export interface ConverseContextType {
-  converse: ITemplate | null;
-  setConverse: (converse: ITemplate | null) => void;
+  page: IPage | null;
+  setPage: (page: IPage | null) => void;
   product: IProduct | null;
   setProduct: (product: IProduct | null) => void;
 }

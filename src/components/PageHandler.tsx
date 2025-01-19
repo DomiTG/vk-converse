@@ -2,41 +2,31 @@ import { useEffect, useState } from "react";
 import { useConverse } from "./contexts/ConverseContext";
 import IEditorPage from "./editor/interfaces/IEditorPage";
 import RootComponent from "./editor/components/RootComponent";
-import IPage from "./editor/interfaces/IPage";
 import { loadTemplateJson } from "@/utils/loader";
+import { NextPageContext } from "next";
 
 export default function PageHandler({ route }: { route: string }) {
-  const [page, setPage] = useState<IEditorPage | null>(null);
+  const [parsedPage, setPardedPage] = useState<IEditorPage | null>(null);
   const [updateFlag, setUpdateFlag] = useState(false);
-  const { converse } = useConverse();
+  const { page } = useConverse();
 
   const toggle = () => {
     setUpdateFlag(!updateFlag);
   };
 
-  const matchPage = (pages: IPage[]): IPage | undefined => {
-    if (!converse) return undefined;
-    return route === "/"
-      ? pages.find((page) => !page.url)
-      : pages.find((page) => page.url === route);
-  };
-
   useEffect(() => {
-    if (!converse) return;
-    const page = matchPage(converse.pages);
-    if (!page) return console.log("Page not found");
-    console.log(page.components);
+    if (!page) return;
     const pages = loadTemplateJson(page);
-    setPage(pages);
-  }, [converse]);
+    setPardedPage(pages);
+  }, [page]);
 
-  if (!converse) return null;
+  if (!parsedPage) return null;
   return (
     <>
       {page
         ? updateFlag
-          ? render(page, toggle)
-          : render(page, toggle)
+          ? render(parsedPage, toggle)
+          : render(parsedPage, toggle)
         : "404"}
     </>
   );
@@ -55,4 +45,12 @@ const render = (page: IEditorPage, updateMethod: () => void) => {
     }
   }
   return rootComponent.productionRender();
+};
+
+PageHandler.getStaticProps = async (ctx: NextPageContext) => {
+  const route = ctx.pathname;
+  console.log(route);
+  return {
+    props: { route },
+  };
 };
