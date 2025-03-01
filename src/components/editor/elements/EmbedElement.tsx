@@ -69,7 +69,8 @@ export default class EmbedElement extends IEditorComponent {
           src={url || ""}
           width="100%"
           height="100%"
-          className={`absolute top-0 left-0 w-full h-full ${
+          className={`absolute top-0 left-0 w-full h-full max-w-[calc(100vw-2rem)]
+            ${
             rounded ? "rounded-lg" : ""
           }`}
           frameBorder="0"
@@ -88,7 +89,8 @@ export default class EmbedElement extends IEditorComponent {
 
     return (
       <div
-        className={`relative ${
+        className={`relative max-w-[calc(100vw-2rem)] group hover:border border-gray-700
+          ${
           rounded ? "rounded-lg" : ""
         }`}
         style={{
@@ -100,7 +102,8 @@ export default class EmbedElement extends IEditorComponent {
           src={url || ""}
           width="100%"
           height="100%"
-          className={`absolute top-0 left-0 w-full h-full ${
+          className={`absolute top-0 left-0 w-full h-full max-w-[calc(100vw-2rem)]
+            ${
             rounded ? "rounded-lg" : ""
           }`}
           frameBorder="0"

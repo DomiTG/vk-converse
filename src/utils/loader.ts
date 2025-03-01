@@ -4,7 +4,6 @@ import IEditorPage from "@/components/editor/interfaces/IEditorPage";
 import IPage from "@/components/editor/interfaces/IPage";
 
 export const loadTemplateJson = (page: IPage): IEditorPage | null => {
-  console.log("loading up page", page.name);
   const newPage = {
     name: page.name,
     root_component: null,
@@ -23,21 +22,13 @@ export const loadTemplateJson = (page: IPage): IEditorPage | null => {
   return newPage;
 };
 
-export const matchPage = (pages: IPage[], route: string): IPage | undefined => {
-  return route === "/"
-    ? pages.find((page) => !page.url)
-    : pages.find((page) => page.url === route);
-};
-
 export const loadSubComponents = (
   root: RootComponent,
   parent: IEditorComponent,
   components: any[],
 ): void => {
-  console.log(components);
   const subComponents = [] as IEditorComponent[];
   components.forEach((component: any) => {
-    console.log("Loading up sub comp", component.id);
     const newComponent = root.getComponentById(component.id)?.clone();
     if (!newComponent) {
       console.warn("Component not found", component.id);

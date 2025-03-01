@@ -15,10 +15,13 @@ export default interface SettingType {
     | "RANGE"
     | "UNKNOWN"
     | "CODE"
-    | "TEXTAREA";
+    | "TEXTAREA"
+    | "PAGE";
   value: string | number | boolean | IMediaAttachment | null;
   rangeMin?: number;
   rangeMax?: number;
   rangeStep?: number;
   options?: { id: string; name: string }[];
+  condition?: (settings: SettingType[]) => boolean;
+  onChange?: (value: string | number | boolean | IMediaAttachment | null) => void;
 }

@@ -37,19 +37,26 @@ model users {
 }
 
 model conversion_pages {
-  id          String               @id @default(cuid())
-  name        String               @db.VarChar(64)
-  description String?              @db.VarChar(512)
-  type        conversion_page_type
-  created_at  DateTime             @default(now()) @db.DateTime(0)
-  updated_at  DateTime             @default(now()) @db.DateTime(0)
-  live_mode   Boolean              @default(false)
-  template    String               @db.LongText
-  creator_id  Int
-  product_id  Int
-  creator     users                @relation(fields: [creator_id], references: [id], onUpdate: Restrict, map: "conversion_pages_ibfk_1")
-  product     products             @relation(fields: [product_id], references: [id], onUpdate: Restrict, map: "conversion_pages_ibfk_2")
-  domains     page_domains[]
+  id                        String                      @id @default(cuid())
+  name                      String                      @db.VarChar(64)
+  description               String?                     @db.VarChar(512)
+  type                      conversion_page_type
+  currency                  conversion_pages_currency   @default(CZK)
+  created_at                DateTime                    @default(now()) @db.DateTime(0)
+  updated_at                DateTime                    @default(now()) @db.DateTime(0)
+  live_mode                 Boolean                     @default(false)
+  taxes                     Boolean                     @default(false)
+  template                  String                      @db.LongText
+  creator_id                Int
+  product_id                Int
+  converse_integrations     converse_integrations[]
+  converse_orders           converse_orders[]
+  converse_payment_methods  converse_payment_methods[]
+  seo                       converse_seo[]
+  converse_shipping_methods converse_shipping_methods[]
+  creator                   users                       @relation(fields: [creator_id], references: [id], onUpdate: Restrict, map: "conversion_pages_ibfk_1")
+  product                   products                    @relation(fields: [product_id], references: [id], onUpdate: Restrict, map: "conversion_pages_ibfk_2")
+  domains                   page_domains[]
 
   @@index([creator_id], map: "conversion_pages_ibfk_1")
   @@index([product_id], map: "product_id")
@@ -89,6 +96,7 @@ model converse_templates {
   template      String                           @db.LongText
   thumbnail_url String                           @db.VarChar(512)
   converse_type converse_templates_converse_type
+  public        Boolean                          @default(true)
   creator       users                            @relation(fields: [creator_id], references: [id], onUpdate: Restrict, map: "converse_templates_ibfk_1")
 
   @@index([creator_id], map: "creator_id")
@@ -98,19 +106,133 @@ model products {
   id                 Int                      @id @default(autoincrement())
   creator_id         Int
   name               String                   @db.VarChar(36)
+  description        String?                  @db.VarChar(256)
+  image_url          String?                  @db.VarChar(1024)
   product_type       products_product_type
   product_subtype    products_product_subtype
   prices             String                   @db.LongText
-  tax_payer          Boolean
   tax_included       Boolean
   tax_rate           Int
   weight             Int?
   email_html_content String?                  @db.LongText
   attachments        String?                  @db.LongText
+  created_at         DateTime?                @default(now()) @db.Timestamp(0)
+  updated_at         DateTime?                @default(now()) @db.Timestamp(0)
+  converse_orders    converse_orders[]
   conversion_pages   conversion_pages[]
   creator            users                    @relation(fields: [creator_id], references: [id], onUpdate: Restrict, map: "products_ibfk_1")
 
   @@index([creator_id], map: "creator_id")
+}
+
+model converse_shipping_methods {
+  id              Int                                   @id @default(autoincrement())
+  converse_id     String
+  integration     converse_shipping_methods_integration
+  name            String                                @db.VarChar(256)
+  image_url       String?                               @db.VarChar(256)
+  description     String?                               @db.VarChar(512)
+  tax_included    Boolean                               @default(false)
+  tax_rate        Int                                   @default(0)
+  prices          String                                @db.LongText
+  settings        String                                @db.LongText
+  created_at      DateTime                              @default(now()) @db.DateTime(0)
+  updated_at      DateTime                              @default(now()) @db.DateTime(0)
+  converse_orders converse_orders[]
+  converse        conversion_pages                      @relation(fields: [converse_id], references: [id], onUpdate: Restrict, map: "converse_shipping_methods_ibfk_1")
+
+  @@index([converse_id], map: "converse_id")
+}
+
+model converse_integrations {
+  id               Int                                    @id @default(autoincrement())
+  converse_id      String
+  integration_type converse_integrations_integration_type
+  enabled          Boolean                                @default(false)
+  values           String                                 @db.LongText
+  converse         conversion_pages                       @relation(fields: [converse_id], references: [id], onUpdate: Restrict, map: "converse_integrations_ibfk_1")
+
+  @@index([converse_id], map: "converse_id")
+}
+
+model converse_payment_methods {
+  id              Int                                  @id @default(autoincrement())
+  converse_id     String
+  integration     converse_payment_methods_integration
+  name            String                               @db.VarChar(128)
+  image_url       String?                              @db.VarChar(128)
+  description     String?                              @db.VarChar(512)
+  tax_included    Boolean?                             @default(false)
+  tax_rate        Int?                                 @default(0)
+  prices          String                               @db.LongText
+  settings        String                               @db.LongText
+  created_at      DateTime                             @default(now()) @db.DateTime(0)
+  updated_at      DateTime                             @default(now()) @db.DateTime(0)
+  converse_orders converse_orders[]
+  converse        conversion_pages                     @relation(fields: [converse_id], references: [id], onUpdate: Restrict, map: "converse_payment_methods_ibfk_1")
+
+  @@index([converse_id], map: "converse_id")
+}
+
+model converse_orders {
+  id                    Int                       @id @default(autoincrement())
+  converse_id           String
+  currency              converse_orders_currency
+  product_id            Int
+  product_quantity      Int
+  contact_first_name    String                    @db.VarChar(32)
+  contact_last_name     String                    @db.VarChar(32)
+  contact_email_address String                    @db.VarChar(128)
+  contact_phone         String                    @db.VarChar(32)
+  delivery_city         String                    @db.VarChar(32)
+  delivery_postal_code  String                    @db.VarChar(32)
+  delivery_street       String                    @db.VarChar(64)
+  delivery_house_number String                    @db.VarChar(64)
+  delivery_country      String                    @db.VarChar(32)
+  shipping_method_id    Int
+  payment_method_id     Int
+  paid                  Boolean                   @default(false)
+  additional_data       String                    @db.LongText
+  tracking_details      String                    @db.LongText
+  status                converse_orders_status    @default(PENDING)
+  created_at            DateTime                  @default(now()) @db.DateTime(0)
+  updated_at            DateTime                  @default(now()) @db.DateTime(0)
+  converse              conversion_pages          @relation(fields: [converse_id], references: [id], onUpdate: Restrict, map: "converse_orders_ibfk_1")
+  product               products                  @relation(fields: [product_id], references: [id], onUpdate: Restrict, map: "converse_orders_ibfk_2")
+  shipping_method       converse_shipping_methods @relation(fields: [shipping_method_id], references: [id], onUpdate: Restrict, map: "converse_orders_ibfk_3")
+  payment_method        converse_payment_methods  @relation(fields: [payment_method_id], references: [id], onUpdate: Restrict, map: "converse_orders_ibfk_4")
+
+  @@index([converse_id], map: "converse_id")
+  @@index([payment_method_id], map: "payment_method_id")
+  @@index([product_id], map: "product_id")
+  @@index([shipping_method_id], map: "shipping_method_id")
+}
+
+model converse_seo {
+  id               Int              @id @default(autoincrement())
+  converse_id      String
+  title            String           @db.VarChar(64)
+  description      String?          @db.VarChar(64)
+  favicon          String?          @db.VarChar(128)
+  keywords         String?          @db.VarChar(256)
+  conversion_pages conversion_pages @relation(fields: [converse_id], references: [id], onUpdate: Restrict, map: "converse_seo_ibfk_1")
+
+  @@index([converse_id], map: "converse_id")
+}
+
+model invoice_profiles {
+  id            Int     @id @default(autoincrement())
+  profile_name  String  @db.Text
+  name          String  @db.Text
+  street        String  @db.Text
+  postal_code   String  @db.Text
+  city          String  @db.Text
+  country       String  @db.Text
+  ic            String  @db.Text
+  dic           String  @db.Text
+  tax_mode      Boolean @default(false)
+  contact_email String  @db.VarChar(64)
+  contact_phone String  @db.VarChar(64)
 }
 
 enum conversion_page_type {
@@ -137,4 +259,39 @@ enum products_product_type {
 enum products_product_subtype {
   DIGITAL
   PHYSICAL
+}
+
+enum converse_shipping_methods_integration {
+  NONE
+  PACKETA
+}
+
+enum converse_payment_methods_integration {
+  NONE
+  STRIPE
+}
+
+enum converse_orders_currency {
+  CZK
+  EUR
+  USD
+}
+
+enum conversion_pages_currency {
+  CZK
+  EUR
+  USD
+}
+
+enum converse_orders_status {
+  PENDING
+  SENT
+  DELIVERED
+  CANCELLED
+}
+
+enum converse_integrations_integration_type {
+  PACKETA
+  STRIPE
+  CAPTCHA
 }

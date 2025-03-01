@@ -18,6 +18,7 @@ export default abstract class IEditorComponent {
   setHoveredComponent!: (component: IEditorComponent | null) => void;
 
   responsivitySettings: SettingType[] = [];
+  parentComponent: IEditorComponent | null = null;
 
   constructor(
     name: string,
@@ -42,7 +43,7 @@ export default abstract class IEditorComponent {
 
   removeSubComponent(component: IEditorComponent): void {
     this.subComponents = this.subComponents.filter(
-      (subComponent) => subComponent.id !== component.id,
+      (subComponent) => subComponent !== component,
     );
     this.getUpdateMethod()(this);
   }
@@ -121,7 +122,7 @@ export default abstract class IEditorComponent {
 
   getHoveredComponentMethod(): (component: IEditorComponent | null) => void {
     if (this.rootComponent === this) {
-      console.log("valid root component")
+      console.log("valid root component");
       return this.setHoveredComponent;
     }
     if (!this.rootComponent) {
@@ -144,6 +145,14 @@ export default abstract class IEditorComponent {
       return null;
     }
     return this.rootComponent.hoveredComponent || null;
+  }
+
+  getParentComponent(): IEditorComponent | null {
+    return this.parentComponent;
+  }
+
+  setParentComponent(parentComponent: IEditorComponent): void {
+    this.parentComponent = parentComponent;
   }
 
   save(): any {

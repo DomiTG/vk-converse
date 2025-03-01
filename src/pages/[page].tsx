@@ -1,14 +1,8 @@
 import PageHandler from "@/components/PageHandler";
-import type { InferGetServerSidePropsType, GetServerSideProps } from "next";
-import { NextPageContext } from "next";
 import { usePathname } from "next/navigation";
 
-export const getServerSideProps = (async () => {
-  return { props: { test: null } };
-}) satisfies GetServerSideProps<{ test: any }>;
-
-export default function Page({
-  test,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  return <></>;
+export default function Page() {
+  const pathName = usePathname().split("/");
+  console.log(pathName[1]);
+  return pathName.length > 1 ? <PageHandler route={pathName[1]} /> : "400444";
 }

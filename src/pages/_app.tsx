@@ -7,51 +7,114 @@ import { useEffect, useState } from "react";
 import IProduct from "@/components/editor/interfaces/IProduct";
 import { ConverseProvider } from "@/components/contexts/ConverseContext";
 import ITemplate from "@/components/editor/interfaces/ITemplate";
-import { matchPage } from "@/utils/loader";
-import IPage from "@/components/editor/interfaces/IPage";
+import { Montserrat } from "next/font/google";
+import IShippingMethod from "@/components/editor/interfaces/IShippingMethod";
+import IPaymentMethod from "@/components/editor/interfaces/IPaymentMethod";
+import IConverseSeo from "@/components/editor/interfaces/IConverseSeo";
 
-type Props = { host: any | null; originalHost: string; notFound?: boolean };
+type Props = {
+  host: any | null;
+  originalHost: string;
+  shippingMethods: IShippingMethod[];
+  paymentMethods: IPaymentMethod[];
+  siteKey: string | null;
+};
 
+const mt = Montserrat({ subsets: ["latin", "latin-ext"] });
 export default function MyApp({
   Component,
   pageProps,
   host,
   originalHost,
-  notFound,
+  shippingMethods,
+  paymentMethods,
+  siteKey,
 }: AppProps & Props) {
-  const [page, setPage] = useState<IPage | null>(null);
+  const [converse, setConverse] = useState<ITemplate | null>(null);
   const [product, setProduct] = useState<IProduct | null>(null);
+  const [shipmentMethods, setShipmentMethods] = useState<IShippingMethod[]>([]);
+  const [payMethods, setPayMethods] = useState<IPaymentMethod[]>([]);
+  const [currency, setCurrency] = useState<"CZK" | "EUR" | "USD" | "NONE">(
+    "NONE",
+  );
+  const [converseId, setConverseId] = useState<string | null>(null);
+  const [seo, setSeo] = useState<IConverseSeo | null>(null);
+  const [captchaSiteKey, setCaptchaSiteKey] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!host) return;
+    document.documentElement.className = `${mt.className}`;
+  }, []);
+
+  useEffect(() => {
     console.log(host);
-    if (!host.converse.page) return console.log("no page");
-    const page = host.converse.page as IPage;
-    setPage(page);
+    if (!host) return;
+    if (!host.converse.template) return console.log("no template");
+    const template = host.converse.template as ITemplate;
+    setConverse(template);
+    const currency = host.converse.currency as "CZK" | "EUR" | "USD";
+    setCurrency(currency);
     if (!host.converse.product) return console.log("no product");
     const product = host.converse.product as IProduct;
     setProduct(product);
-    console.log("loaded in", product.id, page.name);
-  }, [host]);
+    if (shipmentMethods) {
+      setShipmentMethods(shippingMethods);
+    }
+    if (payMethods) {
+      setPayMethods(paymentMethods);
+    }
 
-  if (notFound) {
-    return <h1>Not found</h1>;
-  }
+    if (host.converse.id) {
+      console.log(host.converse.id)
+      setConverseId(host.converse.id);
+    }
+    if(host.converse.seo && host.converse.seo[0]){
+      setSeo(host.converse.seo[0]);
+    }
+    if(siteKey) {
+      setCaptchaSiteKey(siteKey);
+    }
+    console.log("loaded in", product.id, template.pages);
+  }, [host]);
 
   if (host === null) {
     return <DomainNotFoundComponent host={originalHost} />;
   }
+
+  if(!captchaSiteKey) {
+    return <div>ddLoading...</div>
+  }
+
   return (
-    <ConverseProvider value={{ page, setPage, product, setProduct }}>
+    <ConverseProvider
+      value={{
+        converse,
+        setConverse,
+        product,
+        setProduct,
+        converseId,
+        setConverseId,
+        shippingMethods: shipmentMethods,
+        setShippingMethods: setShipmentMethods,
+        paymentMethods: payMethods,
+        setPaymentMethods: setPayMethods,
+        currency,
+        setCurrency,
+        seo,
+        setSeo,
+        captchaSiteKey,
+        setCaptchaSiteKey,
+      }}
+    >
       <Component {...pageProps} />
     </ConverseProvider>
   );
 }
 
 MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
-  const pathName = ctx.asPath;
   const host = ctx.req?.headers.host;
+  console.log(host)
   if (!host) {
+    console.log("no host")
     return { host: null, originalHost: null };
   }
   try {
@@ -69,24 +132,50 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
             description: true,
             live_mode: true,
             name: true,
-            product: true,
             template: true,
+            currency: true,
             type: true,
             updated_at: true,
+            product: true,
+            converse_shipping_methods: true,
+            converse_payment_methods: true,
+            seo: true
           },
         },
       },
     });
-    const template = (await JSON.parse(
-      domainMain?.converse.template || "{}",
-    )) as ITemplate;
+    let shippingMethods: IShippingMethod[] = [];
+    let paymentMethods: IPaymentMethod[] = [];
+    if (domainMain && domainMain.converse) {
+      shippingMethods = (await Promise.all(
+        domainMain.converse.converse_shipping_methods.map(async (method) => {
+          return { ...method, prices: await JSON.parse(method.prices) };
+        }),
+      )) as IShippingMethod[];
 
-    const page = matchPage(template.pages, pathName || "/");
-    if (!page) {
-      return { host: null, originalHost: host, notFound: true };
+      paymentMethods = (await Promise.all(
+        domainMain.converse.converse_payment_methods.map(async (method) => {
+          return { ...method, prices: await JSON.parse(method.prices) };
+        }),
+      )) as IPaymentMethod[];
     }
 
-    console.log(page);
+    let captchaSiteKey = null;
+    if (domainMain && domainMain.converse) {
+      const captchaIntegration = await prisma.converse_integrations.findFirst({
+        where: {
+          converse_id: domainMain.converse.id,
+          integration_type: "CAPTCHA",
+        },
+      });
+      if (captchaIntegration) {
+        const values = await JSON.parse(captchaIntegration.values);
+        console.log(values)
+        captchaSiteKey = values.find((value: any) => value.key === "SITE_KEY")?.value;
+      }
+    }
+
+    const template = await JSON.parse(domainMain?.converse.template || "{}");
 
     return {
       host: domainMain
@@ -94,13 +183,17 @@ MyApp.getInitialProps = async ({ ctx }: { ctx: NextPageContext }) => {
             ...domainMain,
             converse: {
               ...domainMain.converse,
-              page,
+              template,
             },
           }
         : null,
+      shippingMethods,
+      paymentMethods,
       originalHost: host,
+      siteKey: captchaSiteKey,
     };
   } catch (error) {
+    console.log(error)
     return { host: null, originalHost: host };
   }
 };

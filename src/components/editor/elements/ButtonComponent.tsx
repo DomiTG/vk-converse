@@ -2,8 +2,10 @@ import { GiNextButton } from "react-icons/gi";
 import IEditorComponent from "../classes/IEditorComponent";
 import * as FaIcons from "react-icons/fa"; // Font Awesome icons
 import IconRenderer from "@/components/IconRenderer";
+import ButtonAction from "../settings/ButtonAction";
 
 export default class ButtonComponent extends IEditorComponent {
+  buttonAction: ButtonAction | null = null;
   constructor() {
     super(
       "Button",
@@ -135,6 +137,38 @@ export default class ButtonComponent extends IEditorComponent {
           value: "#ffffff",
           visible: true,
         },
+        {
+          id: "ACTION",
+          name: "Akce",
+          type: "SELECT",
+          options: [
+            { "id": "none", "name": "Žádná" },
+            { "id": "openUrl", "name": "Otevřít" },
+            { "id": "page", "name": "Přejít na stránku" },
+          ],
+          value: "none",
+          visible: true,
+        },
+        {
+          id: "ACTION_URL",
+          name: "URL",
+          type: "TEXT",
+          value: "",
+          visible: false,
+          condition: (settings) => {
+            return settings.find((setting) => setting.id === "ACTION")?.value === "openUrl";
+          }
+        },
+        {
+          id: "ACTION_PAGE",
+          name: "Stránka",
+          type: "PAGE",
+          value: "",
+          visible: false,
+          condition: (settings) => {
+            return settings.find((setting) => setting.id === "ACTION")?.value === "page";
+          }
+        }
       ],
     );
   }
@@ -215,6 +249,10 @@ export default class ButtonComponent extends IEditorComponent {
     const iconSize = (this.getSetting("ICON_SIZE")?.value as number) || 20;
     const iconColor =
       (this.getSetting("ICON_COLOR")?.value as string) || textColor;
+    const action = this.getSetting("ACTION")?.value as string;
+    const actionUrl = this.getSetting("ACTION_URL")?.value as string;
+    const actionPage = this.getSetting("ACTION_PAGE")?.value as string;
+
     return (
       <button
         style={{
@@ -233,6 +271,15 @@ export default class ButtonComponent extends IEditorComponent {
           fontSize: `${textSize}rem`,
         }}
         className="hover:opacity-90 transition duration-200"
+        onClick={(e) => {
+          e.preventDefault();
+          console.log(action, actionUrl);
+          if (action === "openUrl" && actionUrl) {
+            window.location.href = actionUrl;
+          } else if (action === "page" && actionPage) {
+            window.location.href = `/${actionPage}`;
+          }
+        }}
       >
         {icon && (
           <IconRenderer

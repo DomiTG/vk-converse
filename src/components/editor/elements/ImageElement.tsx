@@ -82,7 +82,7 @@ export default class ImageElement extends IEditorComponent {
         style={{
           width: (this.getSetting("width")?.value as number) || 600,
           height: (this.getSetting("height")?.value as number) || 400,
-          objectFit: "cover",
+          objectFit: "fill"
         }}
       />
     );

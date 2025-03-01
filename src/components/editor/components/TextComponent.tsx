@@ -2,7 +2,6 @@ import React from "react";
 import IEditorComponent from "../classes/IEditorComponent";
 import { CiText } from "react-icons/ci";
 import * as FaIcons from "react-icons/fa"; // Font Awesome icons
-import { IconType } from "react-icons";
 import IconRenderer from "@/components/IconRenderer";
 import RootComponent from "./RootComponent";
 
@@ -363,7 +362,7 @@ export default class TextComponent extends IEditorComponent {
     type IconName = keyof typeof FaIcons;
 
     return !icon ? (
-      tagElement as JSX.Element
+      (tagElement as JSX.Element)
     ) : (
       <div className="flex flex-row items-center space-x-2">
         <IconRenderer

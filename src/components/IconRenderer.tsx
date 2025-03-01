@@ -17,15 +17,16 @@ const IconRenderer: React.FC<IconRendererProps> = ({
   color = "black",
   style,
 }) => {
-  const getIconComponent = (iconName: IconName): IconType => FaIcons[iconName];
 
+  const remToPx = (rem: number): number => rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const getIconComponent = (iconName: IconName): IconType => FaIcons[iconName];
   const IconComponent = getIconComponent(icon);
 
   if (!IconComponent) {
     return <span>Icon not found</span>; // Fallback in case the icon doesn't exist
   }
 
-  return <IconComponent size={size + "rem"} color={color} style={style} />;
+  return <IconComponent size={remToPx(size) + "px"} color={color} style={style} />;
 };
 
 export default IconRenderer;
